@@ -27,8 +27,21 @@ abstract class Controller implements ControllerInterface
      */
     private $parameters;
 
+    /**
+     * 模板
+     * 
+     * @var string
+     */
+    protected $tpl;
+    
     protected $view;
 
+    /**
+     * 
+     * @var \Powernote\Net\Response
+     */
+    protected $response;
+    
     /**
      *
      * {@inheritDoc}
@@ -52,7 +65,12 @@ abstract class Controller implements ControllerInterface
             throw new ActionValidateFailureException();
         }
         
-        call_user_func_array([$this, $method], $this->getBindArguments($method));
+        $body = call_user_func_array([$this, $method], $this->getBindArguments($method));
+        
+        return (new \Powernote\Net\Response($body));
+        
+        //渲染模板
+        
     }
 
     /**
@@ -88,6 +106,7 @@ abstract class Controller implements ControllerInterface
     /**
      * 获取指定方法可以被正常绑定的参数列表
      *
+     * @param string $method 
      * @return array
      */
     protected function getBindArguments($method)
@@ -105,6 +124,21 @@ abstract class Controller implements ControllerInterface
         return $arguments;
     }
 
+    protected function disableRender()
+    {
+            
+    }
+    
+    protected function render()
+    {
+            
+    }
+    
+    protected function getTpl()
+    {
+       // if ($this->tpl)    
+    }
+    
     /**
      *
      * {@inheritDoc}

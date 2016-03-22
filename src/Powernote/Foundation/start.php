@@ -3,6 +3,7 @@ use Powernote\Config\Config;
 use Powernote\Routing\Automate;
 use Powernote\Support\Facades\Router;
 use Powernote\Support\Facades\Facade;
+use Powernote\Autoloader\ClassLoader;
 
 // 开启错误报告
 error_reporting(E_ALL);
@@ -14,6 +15,8 @@ $app->singleton('config', function ($container) use($app)
 });
 
 $config = $app['config']['app'];
+
+$app->singleton('app', $app);
 
 // 设置APP
 Facade::clearResolvedInstances();
@@ -33,6 +36,9 @@ if ($config['debug'] == true)
 {
     ini_set('display_errors', 'on');
 }
+
+//注册当前应用程序名称空间
+ClassLoader::init()->addNamespace('App', $app['path.app'].'/');
 
 // 设置时区
 date_default_timezone_set($config['timezone']);

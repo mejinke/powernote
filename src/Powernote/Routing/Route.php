@@ -55,8 +55,6 @@ class Route implements RouteInterface
      */
     protected $matches = [];
     
-    use ControllerTrait;
-
     /**
      * 初始化
      *
@@ -198,17 +196,16 @@ class Route implements RouteInterface
             
             switch (count($chunks))
             {
-                case 2:
-                    array_unshift($chunks, 'default');
+                case 1:
+                    array_unshift($chunks, 'index');
                     break;
-                case 3:
+                case 2:
                     break;
                 default:
                     throw new InvalidRouteCallbackException('无效的Callback：' . $callback);
             }
-            return (new Front())->setModule(lcfirst($chunks[0]))
-                ->setController($chunks[1])
-                ->setAction($chunks[2])
+            return (new Front())->setController($chunks[0])
+                ->setAction($chunks[1])
                 ->setParameters($this->params)
                 ->callMethod();
         }

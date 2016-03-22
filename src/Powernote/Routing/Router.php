@@ -232,7 +232,7 @@ class Router
                 return $this->routed->response();
             }
         }
-        
+       
         return null;
     }
 

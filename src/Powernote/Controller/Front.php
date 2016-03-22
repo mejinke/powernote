@@ -2,8 +2,6 @@
 namespace Powernote\Controller;
 
 use Powernote\Support\Facades\App;
-use Powernote\Container\Container;
-use Powernote\Autoloader\ClassLoader;
 use Powernote\Controller\Exception\InvalidControllerException;
 
 /**
@@ -14,21 +12,6 @@ use Powernote\Controller\Exception\InvalidControllerException;
  */
 class Front
 {
-
-    /**
-     * Container
-     *
-     * @var \Powernote\Container\Container
-     */
-    protected $container;
-
-    /**
-     * 模块名
-     *
-     * @var string
-     */
-    protected $module;
-
     /**
      * 控制器名
      *
@@ -49,23 +32,6 @@ class Front
      * @var array
      */
     protected $parameters = [];
-
-    public function __construct(Container $c = null)
-    {
-        $this->container = $c ?  : App::getFacadeApplication();
-    }
-
-    /**
-     * 设置模块名
-     *
-     * @param string $name
-     * @return \Powernote\Controller\Front
-     */
-    public function setModule($name)
-    {
-        $this->module = $name;
-        return $this;
-    }
 
     /**
      * 设置控制器名
@@ -110,41 +76,23 @@ class Front
      * @param string $name
      * @param string $method
      * @param array $arguments
-     * @return mixed
+     * @return \Powernote\Net\Response
      * @throws InvalidControllerException
      */
     public function callMethod()
     {
-        if ($path = $this->getControllerPath())
-        {
-            ClassLoader::init()->addDirectories([$path]);
-        }
-        
         list ($name, $method) = $this->normalizeName();
-
+      
         $class = new $name();
         
         if (! $class instanceof ControllerInterface)
         {
             throw new InvalidControllerException();
         }
-        
-        $class->call($method, $this->parameters);
+       
+        return $class->call($method, $this->parameters);
     }
 
-    /**
-     * 获取当前要执行的控制器路径
-     *
-     * @return string
-     */
-    private function getControllerPath()
-    {
-        if (in_array($this->module, ['', 'default']))
-        {
-            return $this->container['path.app'] . '/controllers';
-        }
-        return $this->container['path.app'] . '/modules/' . $this->module . '/controllers';
-    }
 
     /**
      * 标准化名称
@@ -153,6 +101,8 @@ class Front
      */
     private function normalizeName()
     {
-        return [$this->controller . 'Controller', $this->action . 'Action'];
+        $appName = App::getAppName();
+        $class = "\\App\\{$appName}\Controllers\\{$this->controller}Controller";
+        return [$class, $this->action . 'Action'];
     }
 }

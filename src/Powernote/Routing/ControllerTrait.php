@@ -22,7 +22,7 @@ trait ControllerTrait
      * @param string $method
      * @param array $arguments
      * @return mixed
-     * @throws Powernote\Routing\Exception\InvalidRouteCallbackException
+     * @throws \Powernote\Routing\Exception\InvalidRouteCallbackException
      */
     public function callMethod($module, $name, $method, $arguments)
     {

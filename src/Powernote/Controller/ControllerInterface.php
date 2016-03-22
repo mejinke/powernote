@@ -15,7 +15,7 @@ interface ControllerInterface
      * 
      * @param string $method
      * @param array $parameters
-     * @return void
+     * @return \Powernote\Net\Response
      */
     public function call($method, array $parameters);
 

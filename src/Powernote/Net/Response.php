@@ -7,13 +7,6 @@ namespace Powernote\Net;
  * @author tian <mejinke@gmail.com>
  *
  */
-
-/**
- * 
- *
- * @author tian <mejinke@gmail.com> Dec 29, 2015 2:27:30 PM
- *
- */
 class Response
 {
 
@@ -107,6 +100,13 @@ class Response
     {
         $this->headers = $header;
         return $this;
+    }
+    
+    public function __toString()
+    {
+        //检查header
+        echo !is_object($this->headers) ? new Headers() : $this->headers;
+        return $this->body;
     }
     
 }

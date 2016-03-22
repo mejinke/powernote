@@ -1,5 +1,6 @@
 <?php
-namespace Powernote\Database\Table;
+namespace Powernote\Support;
+
 
 /**
  * 简单的锁特性
@@ -7,7 +8,7 @@ namespace Powernote\Database\Table;
  * @author tian <mejinke@gmail.com>
  *        
  */
-trait DataLockTrait
+trait LockTrait
 {
 
     /**
@@ -25,12 +26,14 @@ trait DataLockTrait
     private $time = 0;
 
     /**
-     * 上锁
+     * 上锁【如果之前已上过锁将抛出异常】
      *
+     *@throws \Powernote\Support\Exception\LockException
      * @return void
      */
     public function lock()
     {
+        $this->touchLock();
         $this->time = time();
         $this->lock = true;
     }
@@ -50,21 +53,21 @@ trait DataLockTrait
      *
      * @return int 时间戳；如果之前从来没有上锁过则返回 0
      */
-    public function time()
+    public function lockTime()
     {
         return $this->time;
     }
 
     /**
-     * 如果已上锁将会拋出LockException异常
+     * 如果已上锁将会拋出Lock异常
      *
-     * @throws LockException
+     * @throws \Powernote\Support\Exception\LockException
      */
     public function touchLock()
     {
         if ($this->lock === true)
         {
-            throw new LockException('Table lock.');
+            throw new \Powernote\Support\Exception\LockException('The current has not been unlocked');
         }
     }
 }

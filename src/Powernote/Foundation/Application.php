@@ -30,11 +30,33 @@ class Application extends Container
     /**
      * 创建一个应用
      *
+     * @param string $appName 当前起动的应用程序名称
+     * @throws \Exception
      * @return void
      */
     public function __construct()
     {
         $this->registerBaseServices();
+    }
+
+    /**
+     * 设置当前需要起动的App名称的Closure
+     * 
+     * @param \Closure $fun
+     */
+    public function setAppNameClosure(\Closure $fun)
+    {
+        $this->singleton('appNameClosure', $fun);
+    }
+
+    /**
+     * 获取当前应用程序名称
+     *
+     * @return string
+     */
+    public function getAppName()
+    {
+        return $this['appNameClosure'] ?: 'main';
     }
 
     /**
@@ -86,14 +108,14 @@ class Application extends Container
     /**
      * 检测当前运行环境
      *
-     * @param array $parameter
+     * @param array $environments
      * @return string
      */
-    public function detectEnvironment(array $parameter)
+    public function detectEnvironment(array $environments)
     {
-        $this->singleton('environment', function ($container) use($parameter)
+        $this->singleton('environment', function ($container) use($environments)
         {
-            return new EnvironmentDetect($parameter, ! empty($_SERVER['argv']) ? $_SERVER['argv'] : null);
+            return new EnvironmentDetect($environments, ! empty($_SERVER['argv']) ? $_SERVER['argv'] : null);
         });
         
         $this->singleton('env', $this['environment']->detect());
@@ -107,7 +129,7 @@ class Application extends Container
      */
     public function getConfigLoader()
     {
-        return new FileLoader(new Filesystem(), $this['path.app'] . '/config');
+        return new FileLoader(new Filesystem(), $this['path.config']);
     }
 
     /**
@@ -128,8 +150,8 @@ class Application extends Container
      */
     public function installRoute($path = null)
     {
-        $loader = new RouteFileLoader(new Filesystem(), $path ?  : $this['path.app'] . '/route');
-        $loader->load(Request::getDomainPrefix() ?  : 'www');
+        $loader = new RouteFileLoader(new Filesystem(), $path ?  : $this['path.route']);
+        $loader->load($this->getAppName());
     }
 
     /**
@@ -174,7 +196,4 @@ class Application extends Container
             throw new NotFoundException('Not Found');
         }
     }
-
-    public function response(\Powernote\Net\Response $response)
-    {}
 }

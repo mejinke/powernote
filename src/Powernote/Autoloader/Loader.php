@@ -1,11 +1,13 @@
 <?php
 namespace Powernote\Autoloader;
 
+use Powernote\Support\Facades\Facade;
+
 /**
  * 自动加载基础类
  *
  * @author tian <mejinke@gmail.com>
- *
+ *        
  */
 abstract class Loader
 {
@@ -93,6 +95,7 @@ abstract class Loader
         {
             $file = $dir . str_replace('\\', DIRECTORY_SEPARATOR, $real_class) . '.php';
             $file = $dir . str_replace('\\', '/', $real_class) . '.php';
+            $file = $this->checkAppNamespaceFilePath($prefix, $file);
             if (file_exists($file)) return $file;
         }
         
@@ -132,5 +135,33 @@ abstract class Loader
             $class = substr($class, 1);
         }
         return str_replace(array('\\', '_'), DIRECTORY_SEPARATOR, $class) . '.php';
+    }
+
+    /**
+     * 检查当前应用名称空间文件路径
+     *
+     * @param string $namespacePrefix
+     * @param string $file
+     * @return string;
+     */
+    protected function checkAppNamespaceFilePath($namespacePrefix, $file)
+    {
+        if (class_exists('Powernote\Support\Facades\Facade') && Facade::getFacadeApplication() != null)
+        {
+            $app = Facade::getFacadeApplication();
+            if ('App\\' == $namespacePrefix)
+            {
+                
+                $path = str_replace($app['path.app'], '', $file);
+                $fileName = pathinfo($file, PATHINFO_BASENAME);
+                
+                $exp = explode('/', $path);
+                array_pop($exp);
+                $path = strtolower(implode('/', $exp));
+                
+                return $app['path.app'] . $path . '/' . $fileName;
+            }
+        }
+        return $file;
     }
 }

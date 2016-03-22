@@ -9,7 +9,7 @@ namespace Powernote\Database\Connection;
  */
 interface ConnectionInterface
 {
-
+/*
     public function select();
 
     public function insert();
@@ -18,5 +18,5 @@ interface ConnectionInterface
 
     public function delete();
     
-    public function commit();
+    public function commit();*/
 }

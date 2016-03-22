@@ -24,13 +24,6 @@ class Automate implements RouteInterface
     protected $app;
 
     /**
-     * Module
-     *
-     * @var string
-     */
-    protected $module;
-
-    /**
      * 控制器名称
      *
      * @var string
@@ -66,8 +59,6 @@ class Automate implements RouteInterface
      */
     protected $request;
     
-    use ControllerTrait;
-
     public function __construct()
     {
         $this->app = Facade::getFacadeApplication();
@@ -99,89 +90,47 @@ class Automate implements RouteInterface
                 {
                     throw new InvalidUrlException('Access denied');
                 }
-                // 是否为自定义app
-                if ($this->isApps($parts[0]))
-                {
-                    $this->module = $parts[0];
-                    break;
-                }
-                // 是否为默认app控制器
-                if ($this->isDefaultController($parts[0]))
+                // 是否为控制器
+                if ($this->isController($parts[0]))
                 {
                     $this->controller = $parts[0];
-                    break;
-                }
-                if ($this->isDefaultController())
-                {
-                    $this->action = $parts[0];
                 }
                 break;
-            // 指定的app控制器或默认app控制器中的action
             default:
                 // 不允许显式的访问默认app的首页
                 if (strtolower($parts[0]) == 'index' && strtolower($parts[1]) == 'index')
                 {
                     throw new InvalidUrlException('Access denied');
                 }
-                // 是否为自定义app
-                if ($this->isApps($parts[0]) && $this->isAppsController($parts[0], $parts[1]))
-                {
-                    $this->module = $parts[0];
-                    $this->controller = $parts[1];
-                    $this->action = $parts[2] ?  : 'index';
-                }
-                // 是否为默认app控制器
-                elseif ($this->isDefaultController($parts[0]))
+                // 是否为Action
+                if ($this->isController($parts[0]))
                 {
                     $this->controller = $parts[0];
-                    $this->action = $parts[1];
+                    $this->action = $parts[1] ?  : 'index';
                 }
                 break;
         }
         
-        if ($this->module == '' && $this->controller == '' && $this->action == '')
+        if ($this->controller == '' && $this->action == '')
         {
             throw new NotFoundException('Not Found');
         }
-        
+   
         $this->setDefault();
         
         return true;
     }
 
     /**
-     * 给定的app名称是否为自定义的app？
-     * 自定义app是指存放在application/apps目录中的app
-     *
-     * @param string $appName
-     * @return bool
-     */
-    private function isApps($appName)
-    {
-        return $this->files->isDirectory($this->app['path.app'] . '/modules/' . $appName);
-    }
-
-    /**
-     * 给定的控制器名称是否为一个默认的控制器
-     *
-     * @param string $controllerName
-     * @return bool
-     */
-    private function isDefaultController($controllerName = 'Index')
-    {
-        return $this->files->isFile($this->app['path.app'] . '/controllers/' . ucfirst($controllerName) . self::CONTROLLER_PREFIX . '.php');
-    }
-
-    /**
-     * 给定的控制器名称是否为一个自定义的控制器
+     * 给定的控制器是否存在
      *
      * @param string $appName
      * @param string $controllerName
      * @return bool
      */
-    private function isAppsController($appName, $controllerName)
+    private function isController($controllerName)
     {
-        return $this->files->isFile($this->app['path.app'] . '/modules/' . lcfirst($appName) . '/controllers/' . ucfirst($controllerName) . self::CONTROLLER_PREFIX . '.php');
+        return $this->files->isFile($this->app['path.app'] . '/' . lcfirst($this->app->getAppName()) . '/controllers/' . ucfirst($controllerName) . self::CONTROLLER_PREFIX . '.php');
     }
 
     /**
@@ -191,7 +140,6 @@ class Automate implements RouteInterface
      */
     private function setDefault()
     {
-        $this->module = $this->module ?  : 'default';
         $this->controller = $this->controller ?  : 'Index';
         $this->action = $this->action ?  : 'index';
     }
@@ -232,8 +180,7 @@ class Automate implements RouteInterface
      */
     public function response()
     {
-        return (new Front())->setModule($this->module)
-            ->setController($this->controller)
+        return (new Front())->setController($this->controller)
             ->setAction($this->action)
             ->setParameters($this->request->query->all())
             ->callMethod();

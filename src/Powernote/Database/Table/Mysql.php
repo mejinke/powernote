@@ -1,6 +1,7 @@
 <?php
 namespace Powernote\Database\Table;
 
+use Powernote\Support\LockTrait;
 /**
  * Mysql数据库Table基础类
  *
@@ -9,7 +10,7 @@ namespace Powernote\Database\Table;
  */
 class Mysql extends Base implements TableInterface
 {
-    use DataLockTrait;
+    use LockTrait;
 
     /**
      * 表数据
@@ -18,7 +19,7 @@ class Mysql extends Base implements TableInterface
      */
     private $data;
 
-    public function setData(Array $data)
+    public function setData(array $data)
     {
         $this->touchLock();
         $this->data = $data;
